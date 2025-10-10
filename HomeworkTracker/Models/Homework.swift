@@ -7,23 +7,23 @@
 
 import Foundation
 
-struct Homework {
+struct Homework: Identifiable {
     let id: UUID = UUID()
     var name: String
     var dueDate: Date
     
-    var progress: Int // 0 - 100
-    var mileStones: [(Int, String)] // Default [(70,"finished"),(90, "checked"),(100, "submitted")]
+    var progress: Float // 0 - 1
+    var mileStones: [(Float, String)] // Default [(70,"finished"),(90, "checked"),(100, "submitted")]
     
     init(
         name: String,
         dueDate: Date,
-        mileStones: [(Int, String)]? = nil
+        mileStones: [(Float, String)]? = nil
     ){
         self.name = name
         self.dueDate = dueDate
-        self.progress = 0
-        self.mileStones = mileStones ?? [(70, "finished"),(90, "checked"),(100, "submitted")]
+        self.progress = 0.0
+        self.mileStones = mileStones ?? [(0.7, "finished"),(0.9, "checked"),(1.0, "submitted")]
     }
     
     var time_to_DueDate: TimeInterval {
@@ -31,9 +31,8 @@ struct Homework {
     }
     
     var urgent_level: Float {
-        let f_progress = Float(progress)
         let remaining = Float(time_to_DueDate)
-        return (100 - f_progress) / (remaining + 0.01)
+        return (1.0 - progress) / (remaining + 0.01)
     }
     
 }
