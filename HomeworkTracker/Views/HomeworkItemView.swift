@@ -14,11 +14,12 @@ struct HomeworkItemView: View {
     private var progressPercent: Int { Int((homework.progress * 100).rounded()) }
     private var isOverdue: Bool { homework.dueDate < Date() }
     private var urgencyTint: Color {
+        let urgent_level = homework.urgent_level
         if homework.progress >= 1 { return .green }
         if isOverdue { return .red }
-        let hoursLeft = homework.time_to_DueDate / 3600
-        if hoursLeft < 6 { return .orange }
-        if hoursLeft < 24 { return .yellow }
+        if urgent_level > 0.9 { return .red }
+        if urgent_level > 0.5 { return .orange }
+        if urgent_level > 0.3 { return .yellow }
         return .blue
     }
     private var progressIcon: String {

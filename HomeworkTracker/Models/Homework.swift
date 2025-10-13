@@ -31,7 +31,7 @@ struct Homework: Identifiable {
     }
     
     var urgent_level: Float {
-        let remaining = Float(time_to_DueDate)
+        let remaining = Float(time_to_DueDate) / 3600 / 24 // days left
         return (1.0 - progress) / (remaining + 0.01)
     }
     
