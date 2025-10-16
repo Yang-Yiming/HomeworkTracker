@@ -9,58 +9,61 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    var homeworkList: [Homework]
+    @State private var selectedHomework: Homework? = nil
+    
     var body: some View {
         NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+            // 左侧：空菜单栏（预留给未来功能）
+            VStack {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("功能菜单")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+                    
+                    Text("敬请期待...")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 16)
                 }
-                .onDelete(perform: deleteItems)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Spacer()
             }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
+            .background(.ultraThinMaterial)
         } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            // 右侧：作业列表 + 编辑/统计面板
+            HStack(spacing: 0) {
+                let homeworkListBinding = Binding(
+                    get: { homeworkList },
+                    set: { _ in }
+                )
+                
+                HomeworkListView(homeworkList: homeworkListBinding, selectedHomework: $selectedHomework)
+                    .frame(minWidth: 400, idealWidth: 520)
+                
+                Divider()
+                
+                HomeworkDetailPanel(selectedHomework: $selectedHomework, homeworkList: homeworkListBinding)
+                    .frame(minWidth: 280, idealWidth: 350)
             }
         }
+#if os(macOS)
+        .navigationSplitViewColumnWidth(min: 180, ideal: 220)
+#endif
     }
 }
 
 #Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+    ContentView(
+        homeworkList: [
+            Homework(name: "Math Assignment", dueDate: Date().addingTimeInterval(86400 * 2)),
+            Homework(name: "Physics Lab Report", dueDate: Date().addingTimeInterval(86400 * 1)),
+            Homework(name: "English Essay", dueDate: Date().addingTimeInterval(86400 * 5)),
+            Homework(name: "History Project", dueDate: Date().addingTimeInterval(-86400 * 1)),
+            Homework(name: "Chemistry Quiz Prep", dueDate: Date().addingTimeInterval(86400 * 3)),
+        ]
+    )
 }

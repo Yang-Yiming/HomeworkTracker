@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomeworkListView: View {
     @Binding var homeworkList: [Homework]
+    @Binding var selectedHomework: Homework?
     
     // Search and Filter State
     @State private var searchText: String = ""
@@ -178,7 +179,13 @@ struct HomeworkListView: View {
                         } else {
                             ForEach(filteredAndSortedHomework) { homework in
                                 if let index = homeworkList.firstIndex(where: { $0.id == homework.id }) {
-                                    HomeworkItemView(homework: $homeworkList[index])
+                                    HStack(spacing: 0) {
+                                        HomeworkItemView(homework: $homeworkList[index])
+                                            .contentShape(Rectangle())
+                                            .onTapGesture {
+                                                selectedHomework = homework
+                                            }
+                                    }
                                 }
                             }
                         }
@@ -336,6 +343,7 @@ private struct EmptyStateView: View {
         Homework(name: "History Project", dueDate: Date().addingTimeInterval(-86400 * 1)), // Overdue
         Homework(name: "Chemistry Quiz Prep", dueDate: Date().addingTimeInterval(86400 * 3)),
     ]
+    @State var selectedHW: Homework? = nil
     
-    return HomeworkListView(homeworkList: $previewHomeworkList)
+    return HomeworkListView(homeworkList: $previewHomeworkList, selectedHomework: $selectedHW)
 }
