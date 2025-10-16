@@ -29,6 +29,7 @@ struct HomeworkItemDragBarView: View {
                                     isDragging = true
                                     let clamped = min(width, max(0, value.location.x))
                                     dragLocationX = clamped
+                                    homework.progress = Float(dragLocationX / width)
                                 })
                                 .onEnded {
                                     _ in isDragging = false
@@ -39,7 +40,7 @@ struct HomeworkItemDragBarView: View {
                     // completed
                     Capsule()
                         .fill(Color.accentColor)
-                        .frame(width: max(0, CGFloat(homework.progress) * width), height: 8)
+                        .frame(width: max(0, isDragging ? dragLocationX : CGFloat(homework.progress) * width), height: 8)
                         .animation(.interactiveSpring(response: 0.18, dampingFraction: 0.7), value: homework.progress)
                     
                     // Milestones
@@ -85,6 +86,7 @@ struct HomeworkItemDragBarView: View {
                                     }
                                     let clamped = min(width, max(0, value.location.x))
                                     dragLocationX = clamped
+                                    homework.progress = Float(dragLocationX / width)
                                 }
                                 .onEnded { _ in
                                     withAnimation {
