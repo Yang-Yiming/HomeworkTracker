@@ -28,9 +28,9 @@ struct HomeworkEditFormView: View {
                             .foregroundStyle(.secondary)
                         
                         TextField("输入作业名称", text: $homework.name)
-                            .padding(12)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(10)
+                            .padding(8)
+                            .cornerRadius(20)
+                            .glassEffect(in: .rect(cornerRadius: 10))
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
@@ -40,19 +40,20 @@ struct HomeworkEditFormView: View {
                             .foregroundStyle(.secondary)
                         
                         DatePicker(
-                            "选择日期",
+                            "select",
                             selection: $homework.dueDate,
                             displayedComponents: [.date, .hourAndMinute]
                         )
-                        .datePickerStyle(.compact)
-                        .padding(12)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(10)
+                        .datePickerStyle(.field)
+                        .padding(8)
+                        .glassEffect(in: .rect(cornerRadius: 10))
                     }
                 }
                 .padding(16)
-                .background(.ultraThinMaterial)
-                .cornerRadius(12)
+                .glassEffect(in : .rect(
+                    cornerRadius: 20
+                ))
+                
                 
                 // Progress Section
                 VStack(alignment: .leading, spacing: 12) {
@@ -80,32 +81,12 @@ struct HomeworkEditFormView: View {
                         .tint(.accentColor)
                         .padding(.vertical, 4)
                         
-                        // Progress Bar Visual
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(.gray.opacity(0.2))
-                                .frame(height: 12)
-                            
-                            Capsule()
-                                .fill(Color.accentColor)
-                                .frame(width: CGFloat(homework.progress) * 280, height: 12)
-                        }
-                        
-                        // Quick Progress Buttons
-                        HStack(spacing: 8) {
-                            ProgressButton(label: "0%", value: 0, progress: $homework.progress)
-                            ProgressButton(label: "25%", value: 0.25, progress: $homework.progress)
-                            ProgressButton(label: "50%", value: 0.5, progress: $homework.progress)
-                            ProgressButton(label: "75%", value: 0.75, progress: $homework.progress)
-                            ProgressButton(label: "100%", value: 1.0, progress: $homework.progress)
-                        }
-                        .font(.caption)
-                        .fontWeight(.semibold)
                     }
                 }
                 .padding(16)
-                .background(.ultraThinMaterial)
-                .cornerRadius(12)
+                .glassEffect(in: .rect(
+                    cornerRadius: 20
+                ))
                 
                 // Milestones Section
                 VStack(alignment: .leading, spacing: 12) {
@@ -137,15 +118,16 @@ struct HomeworkEditFormView: View {
                                     .foregroundStyle(Color.accentColor)
                                 Spacer()
                             }
-                            .padding(12)
-                            .background(Color.accentColor.opacity(0.1))
+                            .padding(8)
                             .cornerRadius(10)
                         }
                     }
                 }
                 .padding(16)
-                .background(.ultraThinMaterial)
-                .cornerRadius(12)
+                .cornerRadius(19)
+                .glassEffect(in: .rect(
+                    cornerRadius: 20
+                ))
                 
                 // Info Section
                 VStack(alignment: .leading, spacing: 12) {
@@ -161,8 +143,7 @@ struct HomeworkEditFormView: View {
                     }
                 }
                 .padding(16)
-                .background(.ultraThinMaterial)
-                .cornerRadius(12)
+                .glassEffect(in: .rect(cornerRadius: 20))
                 
                 Spacer(minLength: 20)
             }
@@ -226,7 +207,7 @@ private struct MilestoneRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .center, spacing: 10) {
                 Text("进度: \(Int(milestone.progress * 100))%")
                     .font(.caption)
                     .fontWeight(.semibold)
@@ -234,7 +215,9 @@ private struct MilestoneRow: View {
                 
                 TextField("里程碑名称", text: $milestone.title)
                     .font(.body)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)
+                    .padding(5)
+                    .glassEffect(in: .rect(cornerRadius: 8))
             }
             
             Button(action: onDelete) {
@@ -242,9 +225,8 @@ private struct MilestoneRow: View {
                     .foregroundStyle(.red)
             }
         }
-        .padding(12)
-        .background(.gray.opacity(0.1))
-        .cornerRadius(8)
+        .padding(6)
+        .glassEffect(in: .rect(cornerRadius: 8))
     }
 }
 
