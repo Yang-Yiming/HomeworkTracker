@@ -6,33 +6,52 @@
 //
 
 import Foundation
+import SwiftData
 
-struct Homework: Identifiable {
-    let id: UUID = UUID()
+@Model
+final class Homework {
+    var id: UUID
     var name: String
     var dueDate: Date
-    
-    var progress: Float // 0 - 1
-    var mileStones: [(Float, String)] // Default [(70,"finished"),(90, "checked"),(100, "submitted")]
+    var progress: Double
+    @Attribute(.externalStorage) var mileStones: [Milestone]
     
     init(
+        id: UUID = UUID(),
         name: String,
         dueDate: Date,
-        mileStones: [(Float, String)]? = nil
-    ){
+        progress: Double = 0.0,
+        mileStones: [Milestone]? = nil
+    ) {
+        self.id = id
         self.name = name
         self.dueDate = dueDate
-        self.progress = 0.0
-        self.mileStones = mileStones ?? [(0.7, "finished"),(0.9, "checked"),(1.0, "submitted")]
+        self.progress = progress
+        self.mileStones = mileStones ?? [
+            Milestone(progress: 0.7, title: "finished"),
+            Milestone(progress: 0.9, title: "checked"),
+            Milestone(progress: 1.0, title: "submitted")
+        ]
     }
     
     var time_to_DueDate: TimeInterval {
-        return dueDate.timeIntervalSinceNow
+        dueDate.timeIntervalSinceNow
     }
     
-    var urgent_level: Float {
-        let remaining = Float(time_to_DueDate) / 3600 / 24 // days left
+    var urgent_level: Double {
+        let remaining = time_to_DueDate / 3600 / 24 // days left
         return (1.0 - progress) / (remaining + 0.01)
     }
+}
+
+struct Milestone: Codable, Hashable, Identifiable {
+    var id: UUID
+    var progress: Double
+    var title: String
     
+    init(id: UUID = UUID(), progress: Double, title: String) {
+        self.id = id
+        self.progress = progress
+        self.title = title
+    }
 }

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct HomeworkEditHeaderView: View {
-    @Binding var homework: Homework
     @Binding var isEditing: Bool
     var onSave: () -> Void
     
@@ -70,11 +69,9 @@ extension View {
 }
 
 #Preview {
-    @State var hw = Homework(name: "Test", dueDate: Date())
     @State var isEditing = true
     
     return HomeworkEditHeaderView(
-        homework: $hw,
         isEditing: $isEditing,
         onSave: {}
     )

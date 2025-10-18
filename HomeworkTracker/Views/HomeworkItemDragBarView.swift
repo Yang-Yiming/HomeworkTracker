@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeworkItemDragBarView: View {
-    @Binding var homework: Homework
+    @Bindable var homework: Homework
+    @Environment(\.modelContext) private var modelContext
     
     // Drag state
     @State private var isDragging: Bool = false
@@ -18,6 +20,7 @@ struct HomeworkItemDragBarView: View {
             GeometryReader { geometry in
                 let width = geometry.size.width
                 let height = geometry.size.height
+                let thumbPosition = isDragging ? dragLocationX : CGFloat(homework.progress) * width
                 ZStack(alignment: .leading) {
                     // track
                     Capsule()
@@ -29,11 +32,12 @@ struct HomeworkItemDragBarView: View {
                                     isDragging = true
                                     let clamped = min(width, max(0, value.location.x))
                                     dragLocationX = clamped
-                                    homework.progress = Float(dragLocationX / width)
+                                    homework.progress = Double(dragLocationX / width)
                                 })
                                 .onEnded {
                                     _ in isDragging = false
-                                    homework.progress = Float(dragLocationX / width)
+                                    homework.progress = Double(dragLocationX / width)
+                                    try? modelContext.save()
                                 }
                         )
                     
@@ -44,9 +48,8 @@ struct HomeworkItemDragBarView: View {
                         .animation(.interactiveSpring(response: 0.18, dampingFraction: 0.7), value: homework.progress)
                     
                     // Milestones
-                    ForEach(homework.mileStones.indices, id: \.self) { idx in
-                        let milestone = homework.mileStones[idx]
-                        let fraction = CGFloat(min(max(milestone.0, 0), 1))
+                    ForEach(homework.mileStones, id: \.id) { milestone in
+                        let fraction = CGFloat(min(max(milestone.progress, 0), 1))
                         let x = fraction * width
                         VStack(spacing: 2) {
                             Rectangle()
@@ -63,7 +66,7 @@ struct HomeworkItemDragBarView: View {
                     Capsule()
                         .fill(Color.secondary)  //
                         .frame(width: 20, height: 14)  // thumb 大小，可以调整
-                        .position(x: dragLocationX, y: height / 2)
+                        .position(x: thumbPosition, y: height / 2)
                         .opacity(isDragging ? 0.0 : 1.0)
                         .overlay {
                             if isDragging {
@@ -72,7 +75,7 @@ struct HomeworkItemDragBarView: View {
                                     .glassEffect(.clear)
                                     .frame(width: 30, height: 20)
                                     .transition(.opacity)
-                                    .position(x: dragLocationX, y:height / 2)
+                                    .position(x: thumbPosition, y: height / 2)
                                     .animation(.easeInOut(duration: 0.1), value: isDragging)
                             }
                         }
@@ -86,13 +89,14 @@ struct HomeworkItemDragBarView: View {
                                     }
                                     let clamped = min(width, max(0, value.location.x))
                                     dragLocationX = clamped
-                                    homework.progress = Float(dragLocationX / width)
+                                    homework.progress = Double(dragLocationX / width)
                                 }
                                 .onEnded { _ in
                                     withAnimation {
                                         isDragging = false
                                     }
-                                    homework.progress = Float(dragLocationX / width)
+                                    homework.progress = Double(dragLocationX / width)
+                                    try? modelContext.save()
                                 }
                         )
                     
@@ -105,13 +109,21 @@ struct HomeworkItemDragBarView: View {
 
 
 struct HomeworkItemDragBarView_Previews: PreviewProvider {
-    @State static var hw = Homework(
+    static var previews: some View {
+        let container = try! ModelContainer(
+            for: Homework.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+        let hw = Homework(
             name: "Math Assignment",
             dueDate: Date().addingTimeInterval(3600)
         )
-    static var previews: some View {
-        HomeworkItemDragBarView(homework: $hw)
+        context.insert(hw)
+
+        return HomeworkItemDragBarView(homework: hw)
             .padding()
             .previewLayout(.sizeThatFits)
+            .modelContainer(container)
     }
 }

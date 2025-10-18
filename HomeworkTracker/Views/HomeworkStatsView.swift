@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeworkStatsView: View {
     var homeworkList: [Homework]
@@ -30,10 +31,10 @@ struct HomeworkStatsView: View {
         homeworkList.filter { $0.dueDate < Date() && $0.progress < 1.0 }.count
     }
     
-    private var avgProgress: Float {
+    private var avgProgress: Double {
         guard !homeworkList.isEmpty else { return 0 }
-        let totalProgress = homeworkList.reduce(0) { $0 + $1.progress }
-        return totalProgress / Float(homeworkList.count)
+        let totalProgress = homeworkList.reduce(0.0) { $0 + $1.progress }
+        return totalProgress / Double(homeworkList.count)
     }
     
     var body: some View {
@@ -212,14 +213,21 @@ private struct StatCard: View {
 }
 
 #Preview {
-    @State var previewList: [Homework] = [
+    let container = try! ModelContainer(
+        for: Homework.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let context = container.mainContext
+    let previewList: [Homework] = [
         Homework(name: "Math Assignment", dueDate: Date().addingTimeInterval(86400 * 2)),
         Homework(name: "Physics Lab Report", dueDate: Date().addingTimeInterval(86400 * 1)),
         Homework(name: "English Essay", dueDate: Date().addingTimeInterval(86400 * 5)),
         Homework(name: "History Project", dueDate: Date().addingTimeInterval(-86400 * 1)),
-        Homework(name: "Chemistry Quiz Prep", dueDate: Date().addingTimeInterval(86400 * 3)),
+        Homework(name: "Chemistry Quiz Prep", dueDate: Date().addingTimeInterval(86400 * 3))
     ]
+    previewList.forEach { context.insert($0) }
     
     return HomeworkStatsView(homeworkList: previewList)
         .padding()
+        .modelContainer(container)
 }

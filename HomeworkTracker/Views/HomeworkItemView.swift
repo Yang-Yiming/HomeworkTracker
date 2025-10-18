@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeworkItemView: View {
-    @Binding var homework: Homework
+    @Bindable var homework: Homework
     @Environment(\.colorScheme) private var colorScheme
     
     private var progressPercent: Int { Int((homework.progress * 100).rounded()) }
@@ -58,7 +59,7 @@ struct HomeworkItemView: View {
                 Chip(icon: "checkmark.circle.fill", text: "\(progressPercent)%", tint: .accentColor)
             }
             
-            HomeworkItemDragBarView(homework: $homework)
+            HomeworkItemDragBarView(homework: homework)
                 .padding(.top, 2)
         }
         .padding(14)
@@ -101,17 +102,25 @@ private struct Chip: View {
 }
 
 struct HomeworkItemView_Previews: PreviewProvider {
-    @State static var hw = Homework(
+    static var previews: some View {
+        let container = try! ModelContainer(
+            for: Homework.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+        let hw = Homework(
             name: "Math Assignment",
             dueDate: Date().addingTimeInterval(3600)
         )
-    static var previews: some View {
-        VStack(spacing: 16) {
-            HomeworkItemView(homework: $hw)
+        context.insert(hw)
+        
+        return VStack(spacing: 16) {
+            HomeworkItemView(homework: hw)
                 .padding()
                 .previewLayout(.sizeThatFits)
         }
         .padding()
         .background(.background)
+        .modelContainer(container)
     }
 }

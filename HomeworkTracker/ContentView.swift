@@ -9,7 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    var homeworkList: [Homework]
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: [SortDescriptor(\Homework.dueDate, order: .forward)]) private var homeworkList: [Homework]
     @State private var selectedHomework: Homework? = nil
     
     var body: some View {
@@ -36,34 +37,59 @@ struct ContentView: View {
         } detail: {
             // 右侧：作业列表 + 编辑/统计面板
             HStack(spacing: 0) {
-                let homeworkListBinding = Binding(
-                    get: { homeworkList },
-                    set: { _ in }
-                )
-                
-                HomeworkListView(homeworkList: homeworkListBinding, selectedHomework: $selectedHomework)
+                HomeworkListView(homeworkList: homeworkList, selectedHomework: $selectedHomework)
                     .frame(minWidth: 400, idealWidth: 520)
                 
                 Divider()
                 
-                HomeworkDetailPanel(selectedHomework: $selectedHomework, homeworkList: homeworkListBinding)
+                HomeworkDetailPanel(selectedHomework: $selectedHomework, homeworkList: homeworkList)
                     .frame(minWidth: 280, idealWidth: 350)
             }
         }
 #if os(macOS)
         .navigationSplitViewColumnWidth(min: 180, ideal: 220)
 #endif
+        .task {
+            if homeworkList.isEmpty {
+                seedSampleHomework()
+            }
+        }
     }
-}
 
-#Preview {
-    ContentView(
-        homeworkList: [
+    private func seedSampleHomework() {
+        let samples: [Homework] = [
             Homework(name: "Math Assignment", dueDate: Date().addingTimeInterval(86400 * 2)),
             Homework(name: "Physics Lab Report", dueDate: Date().addingTimeInterval(86400 * 1)),
             Homework(name: "English Essay", dueDate: Date().addingTimeInterval(86400 * 5)),
             Homework(name: "History Project", dueDate: Date().addingTimeInterval(-86400 * 1)),
-            Homework(name: "Chemistry Quiz Prep", dueDate: Date().addingTimeInterval(86400 * 3)),
+            Homework(name: "Chemistry Quiz Prep", dueDate: Date().addingTimeInterval(86400 * 3))
         ]
-    )
+        samples.forEach { modelContext.insert($0) }
+        try? modelContext.save()
+    }
 }
+
+#Preview {
+    ContentView()
+        .modelContainer(previewModelContainer)
+}
+
+private let previewModelContainer: ModelContainer = {
+    let container = try! ModelContainer(
+        for: Homework.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let context = container.mainContext
+    let fetch = (try? context.fetch(FetchDescriptor<Homework>())) ?? []
+    if fetch.isEmpty {
+        let samples: [Homework] = [
+            Homework(name: "Math Assignment", dueDate: Date().addingTimeInterval(86400 * 2)),
+            Homework(name: "Physics Lab Report", dueDate: Date().addingTimeInterval(86400 * 1)),
+            Homework(name: "English Essay", dueDate: Date().addingTimeInterval(86400 * 5)),
+            Homework(name: "History Project", dueDate: Date().addingTimeInterval(-86400 * 1)),
+            Homework(name: "Chemistry Quiz Prep", dueDate: Date().addingTimeInterval(86400 * 3))
+        ]
+        samples.forEach { context.insert($0) }
+    }
+    return container
+}()

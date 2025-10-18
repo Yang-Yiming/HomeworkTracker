@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeworkEditFormView: View {
-    @Binding var homework: Homework
+    @Bindable var homework: Homework
     
     var body: some View {
         ScrollView {
@@ -92,11 +93,11 @@ struct HomeworkEditFormView: View {
                         
                         // Quick Progress Buttons
                         HStack(spacing: 8) {
-                            ProgressButton(label: "0%", value: 0, homework: $homework)
-                            ProgressButton(label: "25%", value: 0.25, homework: $homework)
-                            ProgressButton(label: "50%", value: 0.5, homework: $homework)
-                            ProgressButton(label: "75%", value: 0.75, homework: $homework)
-                            ProgressButton(label: "100%", value: 1.0, homework: $homework)
+                            ProgressButton(label: "0%", value: 0, progress: $homework.progress)
+                            ProgressButton(label: "25%", value: 0.25, progress: $homework.progress)
+                            ProgressButton(label: "50%", value: 0.5, progress: $homework.progress)
+                            ProgressButton(label: "75%", value: 0.75, progress: $homework.progress)
+                            ProgressButton(label: "100%", value: 1.0, progress: $homework.progress)
                         }
                         .font(.caption)
                         .fontWeight(.semibold)
@@ -114,9 +115,12 @@ struct HomeworkEditFormView: View {
                         .padding(.horizontal, 4)
                     
                     VStack(spacing: 10) {
-                        ForEach(homework.mileStones.indices, id: \.self) { index in
+                        ForEach(Array(homework.mileStones.enumerated()), id: \.element.id) { index, _ in
                             MilestoneRow(
-                                milestone: $homework.mileStones[index],
+                                milestone: Binding(
+                                    get: { homework.mileStones[index] },
+                                    set: { homework.mileStones[index] = $0 }
+                                ),
                                 onDelete: {
                                     homework.mileStones.remove(at: index)
                                 }
@@ -124,7 +128,7 @@ struct HomeworkEditFormView: View {
                         }
                         
                         Button(action: {
-                            homework.mileStones.append((0.5, "新里程碑"))
+                            homework.mileStones.append(Milestone(progress: 0.5, title: "新里程碑"))
                         }) {
                             HStack(spacing: 8) {
                                 Image(systemName: "plus.circle.fill")
@@ -198,18 +202,18 @@ struct HomeworkEditFormView: View {
 // MARK: - Progress Button
 private struct ProgressButton: View {
     var label: String
-    var value: Float
-    @Binding var homework: Homework
+    var value: Double
+    @Binding var progress: Double
     
     var body: some View {
         Button(action: {
-            homework.progress = value
+            progress = value
         }) {
             Text(label)
                 .frame(maxWidth: .infinity)
                 .padding(8)
-                .background(homework.progress == value ? Color.accentColor : Color.gray.opacity(0.2))
-                .foregroundStyle(homework.progress == value ? .white : .primary)
+                .background(progress == value ? Color.accentColor : Color.gray.opacity(0.2))
+                .foregroundStyle(progress == value ? .white : .primary)
                 .cornerRadius(6)
         }
     }
@@ -217,18 +221,18 @@ private struct ProgressButton: View {
 
 // MARK: - Milestone Row
 private struct MilestoneRow: View {
-    @Binding var milestone: (Float, String)
+    @Binding var milestone: Milestone
     var onDelete: () -> Void
     
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("进度: \(Int(milestone.0 * 100))%")
+                Text("进度: \(Int(milestone.progress * 100))%")
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
                 
-                TextField("里程碑名称", text: $milestone.1)
+                TextField("里程碑名称", text: $milestone.title)
                     .font(.body)
                     .textFieldStyle(.roundedBorder)
             }
@@ -268,10 +272,17 @@ private struct InfoRow: View {
 }
 
 #Preview {
-    @State var hw = Homework(
+    let container = try! ModelContainer(
+        for: Homework.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let context = container.mainContext
+    let hw = Homework(
         name: "Math Assignment",
         dueDate: Date().addingTimeInterval(86400 * 2)
     )
+    context.insert(hw)
     
-    return HomeworkEditFormView(homework: $hw)
+    return HomeworkEditFormView(homework: hw)
+        .modelContainer(container)
 }

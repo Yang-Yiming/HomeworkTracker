@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeworkListView: View {
-    @Binding var homeworkList: [Homework]
+    var homeworkList: [Homework]
     @Binding var selectedHomework: Homework?
     
     // Search and Filter State
@@ -178,14 +179,12 @@ struct HomeworkListView: View {
                             .frame(maxHeight: .infinity)
                         } else {
                             ForEach(filteredAndSortedHomework) { homework in
-                                if let index = homeworkList.firstIndex(where: { $0.id == homework.id }) {
-                                    HStack(spacing: 0) {
-                                        HomeworkItemView(homework: $homeworkList[index])
-                                            .contentShape(Rectangle())
-                                            .onTapGesture {
-                                                selectedHomework = homework
-                                            }
-                                    }
+                                HStack(spacing: 0) {
+                                    HomeworkItemView(homework: homework)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            selectedHomework = homework
+                                        }
                                 }
                             }
                         }
@@ -336,14 +335,30 @@ private struct EmptyStateView: View {
 }
 
 #Preview {
-    @State var previewHomeworkList: [Homework] = [
+    let container = try! ModelContainer(
+        for: Homework.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let context = container.mainContext
+    let homeworkSamples: [Homework] = [
         Homework(name: "Math Assignment", dueDate: Date().addingTimeInterval(86400 * 2)),
         Homework(name: "Physics Lab Report", dueDate: Date().addingTimeInterval(86400 * 1)),
         Homework(name: "English Essay", dueDate: Date().addingTimeInterval(86400 * 5)),
-        Homework(name: "History Project", dueDate: Date().addingTimeInterval(-86400 * 1)), // Overdue
-        Homework(name: "Chemistry Quiz Prep", dueDate: Date().addingTimeInterval(86400 * 3)),
+        Homework(name: "History Project", dueDate: Date().addingTimeInterval(-86400 * 1)),
+        Homework(name: "Chemistry Quiz Prep", dueDate: Date().addingTimeInterval(86400 * 3))
     ]
-    @State var selectedHW: Homework? = nil
+    homeworkSamples.forEach { context.insert($0) }
     
-    return HomeworkListView(homeworkList: $previewHomeworkList, selectedHomework: $selectedHW)
+    struct ListPreview: View {
+        @State var selection: Homework?
+        let container: ModelContainer
+        let items: [Homework]
+        
+        var body: some View {
+            HomeworkListView(homeworkList: items, selectedHomework: $selection)
+                .modelContainer(container)
+        }
+    }
+    
+    return ListPreview(selection: homeworkSamples.first, container: container, items: homeworkSamples)
 }

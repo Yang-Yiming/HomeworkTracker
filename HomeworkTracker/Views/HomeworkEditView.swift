@@ -6,31 +6,42 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeworkEditView: View {
-    @Binding var homework: Homework
+    @Bindable var homework: Homework
     @Binding var isEditing: Bool
     var onSave: () -> Void = {}
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         VStack(spacing: 0) {
             HomeworkEditHeaderView(
-                homework: $homework,
                 isEditing: $isEditing,
-                onSave: onSave
+                onSave: {
+                    onSave()
+                    try? modelContext.save()
+                }
             )
             
-            HomeworkEditFormView(homework: $homework)
+            HomeworkEditFormView(homework: homework)
         }
     }
 }
 
 #Preview {
-    @State var hw = Homework(
+    @State var isEditing = true
+    let container = try! ModelContainer(
+        for: Homework.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let context = container.mainContext
+    let hw = Homework(
         name: "Math Assignment",
         dueDate: Date().addingTimeInterval(86400 * 2)
     )
-    @State var isEditing = true
+    context.insert(hw)
     
-    return HomeworkEditView(homework: $hw, isEditing: $isEditing)
+    return HomeworkEditView(homework: hw, isEditing: $isEditing)
+        .modelContainer(container)
 }
