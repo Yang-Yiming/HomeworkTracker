@@ -222,11 +222,17 @@ private struct MilestoneRow: View {
     var body: some View {
         HStack(spacing: 12) {
             HStack(alignment: .center, spacing: 10) {
-                Text("进度: \(Int(milestone.progress * 100))%")
+                Text("进度:")
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
                 
+                TextField("0-100%", value: $milestone.progress, format: .percent)
+                    .textFieldStyle(.plain)
+                    .padding(5)
+                    .glassEffect(in: .rect(cornerRadius: 8))
+                    .frame(width: 80)
+                    
                 TextField("里程碑名称", text: $milestone.title)
                     .font(.body)
                     .textFieldStyle(.plain)
