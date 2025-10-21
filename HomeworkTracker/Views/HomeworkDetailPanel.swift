@@ -11,6 +11,7 @@ import SwiftData
 struct HomeworkDetailPanel: View {
     @Binding var selectedHomework: Homework?
     var homeworkList: [Homework]
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         ZStack {
@@ -24,6 +25,11 @@ struct HomeworkDetailPanel: View {
                     ),
                     onSave: {
                         selectedHomework = homework
+                    },
+                    onDelete: {
+                        modelContext.delete(homework)
+                        try? modelContext.save()
+                        selectedHomework = nil
                     }
                 )
             } else {

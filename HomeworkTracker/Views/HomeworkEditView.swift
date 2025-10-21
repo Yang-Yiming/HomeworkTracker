@@ -12,6 +12,7 @@ struct HomeworkEditView: View {
     @Bindable var homework: Homework
     @Binding var isEditing: Bool
     var onSave: () -> Void = {}
+    var onDelete: () -> Void = {}
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
@@ -21,7 +22,8 @@ struct HomeworkEditView: View {
                 onSave: {
                     onSave()
                     try? modelContext.save()
-                }
+                },
+                onDelete: onDelete
             )
             
             HomeworkEditFormView(homework: homework)

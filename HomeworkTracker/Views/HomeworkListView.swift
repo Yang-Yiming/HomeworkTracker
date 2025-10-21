@@ -11,6 +11,7 @@ import SwiftData
 struct HomeworkListView: View {
     var homeworkList: [Homework]
     @Binding var selectedHomework: Homework?
+    @Environment(\.modelContext) private var modelContext
     
     // Search and Filter State
     @State private var searchText: String = ""
@@ -128,9 +129,22 @@ struct HomeworkListView: View {
                             }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 8)
-                            .background(Capsule().fill(.ultraThinMaterial))
+                            //.background(Capsule().fill(.ultraThinMaterial))
                             .foregroundStyle(.primary)
                         }
+
+                        Button(action: addHomework) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "plus")
+                                Text("Add Homework")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5.5)
+                            .background(Capsule().fill(.gray.opacity(0.2)))
+                            .foregroundStyle(.primary)
+                        }.buttonStyle(.plain)
                         
                         Spacer()
                         
@@ -194,6 +208,15 @@ struct HomeworkListView: View {
             }
             .navigationTitle("Homework Tracker")
         }
+    }
+}
+
+private extension HomeworkListView {
+    func addHomework() {
+        let newHomework = Homework(name: "New Homework", dueDate: Date())
+        modelContext.insert(newHomework)
+        selectedHomework = newHomework
+        try? modelContext.save()
     }
 }
 
