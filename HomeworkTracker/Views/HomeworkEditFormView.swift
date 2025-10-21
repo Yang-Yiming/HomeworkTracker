@@ -96,14 +96,11 @@ struct HomeworkEditFormView: View {
                         .padding(.horizontal, 4)
                     
                     VStack(spacing: 10) {
-                        ForEach(Array(homework.mileStones.enumerated()), id: \.element.id) { index, _ in
+                        ForEach(homework.mileStones) { milestone in
                             MilestoneRow(
-                                milestone: Binding(
-                                    get: { homework.mileStones[index] },
-                                    set: { homework.mileStones[index] = $0 }
-                                ),
+                                milestone: binding(for: milestone),
                                 onDelete: {
-                                    homework.mileStones.remove(at: index)
+                                    removeMilestone(withId: milestone.id)
                                 }
                             )
                         }
@@ -149,6 +146,23 @@ struct HomeworkEditFormView: View {
             }
             .padding(16)
         }
+    }
+    
+    private func binding(for milestone: Milestone) -> Binding<Milestone> {
+        Binding(
+            get: {
+                homework.mileStones.first(where: { $0.id == milestone.id }) ?? milestone
+            },
+            set: { updated in
+                guard let index = homework.mileStones.firstIndex(where: { $0.id == milestone.id }) else { return }
+                homework.mileStones[index] = updated
+            }
+        )
+    }
+    
+    private func removeMilestone(withId id: Milestone.ID) {
+        guard let index = homework.mileStones.firstIndex(where: { $0.id == id }) else { return }
+        homework.mileStones.remove(at: index)
     }
     
     private var urgencyLabel: String {
