@@ -12,8 +12,23 @@ struct HomeworkItemView: View {
     @Bindable var homework: Homework
     @Environment(\.colorScheme) private var colorScheme
     
-    private var progressPercent: Int { Int((homework.progress * 100).rounded()) }
-    private var isOverdue: Bool { homework.dueDate < Date() }
+    // Reuse a single formatter instance to avoid repeated allocations during scrolling
+    private static let relativeFormatter: DateComponentsFormatter = {
+        let fmt = DateComponentsFormatter()
+        fmt.allowedUnits = [.day, .hour, .minute]
+        fmt.maximumUnitCount = 1
+        fmt.unitsStyle = .abbreviated
+        return fmt
+    }()
+    
+    private var progressPercent: Int {
+        Int((homework.progress * 100).rounded())
+    }
+    
+    private var isOverdue: Bool {
+        homework.dueDate < Date()
+    }
+    
     private var urgencyTint: Color {
         let urgent_level = homework.urgent_level
         if homework.progress >= 1 { return .green }
@@ -23,16 +38,14 @@ struct HomeworkItemView: View {
         if urgent_level > 0.3 { return .yellow }
         return .blue
     }
+    
     private var progressIcon: String {
         homework.progress >= 1 ? "checkmark.seal.fill" : (homework.progress >= 0.7 ? "bolt.fill" : "book.fill")
     }
+    
     private var dueRelative: String {
-        let fmt = DateComponentsFormatter()
-        fmt.allowedUnits = [.day, .hour, .minute]
-        fmt.maximumUnitCount = 1
-        fmt.unitsStyle = .abbreviated
         let secs = abs(homework.time_to_DueDate)
-        let unit = fmt.string(from: secs) ?? ""
+        let unit = Self.relativeFormatter.string(from: secs) ?? ""
         return isOverdue ? "Overdue \(unit)" : "Due in \(unit)"
     }
     

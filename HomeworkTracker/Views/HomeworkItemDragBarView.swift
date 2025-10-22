@@ -15,6 +15,8 @@ struct HomeworkItemDragBarView: View {
     // Drag state
     @State private var isDragging: Bool = false
     @State private var dragLocationX: CGFloat = 0.0
+    @State private var dragAxisLocked: Bool = false
+    @State private var isHorizontalDrag: Bool = false
     
     var body: some View {
             GeometryReader { geometry in
@@ -27,17 +29,35 @@ struct HomeworkItemDragBarView: View {
                         .fill(LinearGradient(gradient: Gradient(colors: [.gray.opacity(0.25), .gray.opacity(0.40)]), startPoint: .leading, endPoint: .trailing))
                         .frame(height:8)
                         .gesture(
-                            DragGesture(minimumDistance: 0)
-                                .onChanged({value in
+                            DragGesture(minimumDistance: 6)
+                                .onChanged({ value in
+                                    // Axis lock: only react to horizontal drags so vertical scroll stays responsive
+                                    if !dragAxisLocked {
+                                        let dx = abs(value.translation.width)
+                                        let dy = abs(value.translation.height)
+                                        if dx > 6 || dy > 6 {
+                                            dragAxisLocked = true
+                                            isHorizontalDrag = dx > dy
+                                        } else {
+                                            return
+                                        }
+                                    }
+                                    guard isHorizontalDrag else { return }
+
                                     isDragging = true
                                     let clamped = min(width, max(0, value.location.x))
                                     dragLocationX = clamped
-                                    homework.progress = Double(dragLocationX / width)
+                                    // Defer model updates until .onEnded to avoid frequent @Model change notifications
                                 })
-                                .onEnded {
-                                    _ in isDragging = false
-                                    homework.progress = Double(dragLocationX / width)
-                                    try? modelContext.save()
+                                .onEnded { _ in
+                                    isDragging = false
+                                    if isHorizontalDrag {
+                                        homework.progress = Double(dragLocationX / width)
+                                        try? modelContext.save()
+                                    }
+                                    // reset axis lock
+                                    dragAxisLocked = false
+                                    isHorizontalDrag = false
                                 }
                         )
                     
@@ -81,29 +101,46 @@ struct HomeworkItemDragBarView: View {
                         }
                         .animation(.easeInOut(duration: 0.1), value: isDragging)
                         .gesture(
-                            DragGesture(minimumDistance: 0)
+                            DragGesture(minimumDistance: 6)
                                 .onChanged { value in
+                                    // Axis lock: only react to horizontal drags so vertical scroll stays responsive
+                                    if !dragAxisLocked {
+                                        let dx = abs(value.translation.width)
+                                        let dy = abs(value.translation.height)
+                                        if dx > 6 || dy > 6 {
+                                            dragAxisLocked = true
+                                            isHorizontalDrag = dx > dy
+                                        } else {
+                                            return
+                                        }
+                                    }
+                                    guard isHorizontalDrag else { return }
+
                                     // 切换到拖动状态（带动画）
                                     withAnimation {
                                         isDragging = true
                                     }
                                     let clamped = min(width, max(0, value.location.x))
                                     dragLocationX = clamped
-                                    homework.progress = Double(dragLocationX / width)
+                                    // Defer model updates until .onEnded to avoid frequent @Model change notifications
                                 }
                                 .onEnded { _ in
                                     withAnimation {
                                         isDragging = false
                                     }
-                                    homework.progress = Double(dragLocationX / width)
-                                    try? modelContext.save()
+                                    if isHorizontalDrag {
+                                        homework.progress = Double(dragLocationX / width)
+                                        try? modelContext.save()
+                                    }
+                                    // reset axis lock
+                                    dragAxisLocked = false
+                                    isHorizontalDrag = false
                                 }
                         )
                     
                 }.frame(height: 20)
             }
             .frame(height: 20)
-            .padding()
         }
 }
 

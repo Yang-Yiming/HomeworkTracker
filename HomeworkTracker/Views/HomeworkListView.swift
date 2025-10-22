@@ -65,9 +65,13 @@ struct HomeworkListView: View {
         return result
     }
     
+    // Use explicit IDs for better performance and stability
+    private var homeworkIDs: Set<UUID> {
+        Set(filteredAndSortedHomework.map { $0.id })
+    }
+    
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
                 // Search Bar
                 SearchBar(text: $searchText)
                     .padding(.horizontal)
@@ -184,7 +188,7 @@ struct HomeworkListView: View {
                 
                 // Homework List
                 ScrollView {
-                    VStack(spacing: 12) {
+                    LazyVStack(spacing: 12) {
                         if filteredAndSortedHomework.isEmpty {
                             EmptyStateView(
                                 searchText: searchText,
@@ -192,22 +196,18 @@ struct HomeworkListView: View {
                             )
                             .frame(maxHeight: .infinity)
                         } else {
-                            ForEach(filteredAndSortedHomework) { homework in
-                                HStack(spacing: 0) {
-                                    HomeworkItemView(homework: homework)
-                                        .contentShape(Rectangle())
-                                        .onTapGesture {
-                                            selectedHomework = homework
-                                        }
-                                }
+                            ForEach(filteredAndSortedHomework, id: \.id) { homework in
+                                HomeworkItemView(homework: homework)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        selectedHomework = homework
+                                    }
                             }
                         }
                     }
                     .padding()
                 }
             }
-            .navigationTitle("Homework Tracker")
-        }
     }
 }
 
