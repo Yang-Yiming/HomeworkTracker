@@ -10,6 +10,7 @@ import SwiftData
 
 struct HomeworkStatsView: View {
     var homeworkList: [Homework]
+    @State private var showingSettings = false
     
     private var totalCount: Int {
         homeworkList.count
@@ -41,14 +42,29 @@ struct HomeworkStatsView: View {
         ScrollView {
             VStack(spacing: 0) {
                 // Header
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("统计概览")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("共 \(totalCount) 项作业")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("统计概览")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        
+                        Text("共 \(totalCount) 项作业")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                            .padding(8)
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .accessibilityLabel("打开设置")
+                    .buttonStyle(.plain)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(20)
@@ -168,6 +184,9 @@ struct HomeworkStatsView: View {
                 
                 Spacer()
             }
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
     }
 }

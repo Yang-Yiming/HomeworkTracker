@@ -12,6 +12,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\Homework.dueDate, order: .forward)]) private var homeworkList: [Homework]
     @State private var selectedHomework: Homework? = nil
+    @StateObject private var automationManager = AutomationManager()
     
     var body: some View {
         NavigationSplitView {
@@ -53,7 +54,10 @@ struct ContentView: View {
             if homeworkList.isEmpty {
                 seedSampleHomework()
             }
+            // Start automation after initial seeding
+            automationManager.start(context: modelContext)
         }
+        .onDisappear { automationManager.stop() }
     }
 
     private func seedSampleHomework() {
