@@ -74,8 +74,10 @@ struct HomeworkItemView: View {
             
             HomeworkItemDragBarView(homework: homework)
                 .padding(.top, 2)
+                .padding(.leading, 8)
+                .padding(.trailing, 8)
         }
-        .padding(14)
+        .padding(16)
         .background(
             ZStack {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)

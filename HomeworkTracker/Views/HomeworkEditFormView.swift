@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 import SwiftData
 
 struct HomeworkEditFormView: View {
@@ -82,6 +83,14 @@ struct HomeworkEditFormView: View {
                         .padding(.vertical, 4)
                         
                     }
+                    
+                    HStack {
+                        Text("Difficulty")
+                            .font(.headline)
+                            .padding(.leading, 4)
+                        
+                        DifficultyPickingView(value: $homework.difficulty)
+                    }
                 }
                 .padding(16)
                 .glassEffect(in: .rect(
@@ -116,8 +125,11 @@ struct HomeworkEditFormView: View {
                                 Spacer()
                             }
                             .padding(8)
-                            .cornerRadius(10)
-                        }
+                            .glassEffect(in: .rect(
+                                cornerRadius: 20
+                            ))
+                            //.cornerRadius(10)
+                        }.buttonStyle(.plain)
                     }
                 }
                 .padding(16)
@@ -270,6 +282,140 @@ private struct InfoRow: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 4)
+    }
+}
+
+// MARK: - Difficulty Picking
+private struct DifficultyPickingView: View {
+    @Binding var value: Int8?
+    
+    @State private var input = ""
+    @State private var showSuggestions = false
+    @FocusState private var isInputFocused: Bool
+    
+    private let options = [
+            (1, "Idiot"),
+            (2, "EZ"),
+            (3, "Medium"),
+            (4, "HARD"),
+            (5, "HELL"),
+            (6, "F**K"),
+        ]
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            
+            HStack{
+                TextField("Input Difficulty (1-6)", text: $input)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($isInputFocused)
+                    .onSubmit {
+                        validateAndApply()
+                    }
+                    .onChange(of: isInputFocused) { _, newValue in
+                        if !newValue {
+                            validateAndApply()
+                        }
+                    }
+                
+                // 下拉箭头
+                Button(action: {
+                    withAnimation {
+                        showSuggestions.toggle()
+                    }
+                }) {
+                    Image(systemName: showSuggestions ? "chevron.up.circle.fill" : "chevron.down.circle")
+                        .foregroundColor(.accentColor)
+                        .font(.system(size: 20))
+                }
+                .buttonStyle(.plain)
+            }
+            
+            if showSuggestions {
+                // Use a lightweight, non-scrolling container instead of List to avoid nesting List inside ScrollView
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(options, id: \.0) { num, label in
+                            Button(action: {
+                                input = "\(num)"
+                                value = Int8(num)
+                                withAnimation { showSuggestions = false }
+                            }) {
+                                HStack {
+                                    Text("\(num) - \(label)")
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 10)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .frame(maxHeight: 120)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray.opacity(0.2))
+                )
+                .transition(.opacity)
+            }
+        }
+    }
+
+    // 提取字符串中的第一个整数（支持可选正负号）。若不存在则返回 nil。
+    private func extractFirstInteger(from text: String) -> Int? {
+        // 使用正则匹配第一个整数
+        let pattern = "[-+]?\\d+"
+        do {
+            let regex = try NSRegularExpression(pattern: pattern)
+            let nsText = text as NSString
+            if let match = regex.firstMatch(in: text, range: NSRange(location: 0, length: nsText.length)) {
+                let matchStr = nsText.substring(with: match.range)
+                return Int(matchStr)
+            }
+        } catch {
+            // 正则失败则忽略
+        }
+        return nil
+    }
+
+    // 判断是否包含严格的关键字（按词边界，大小写不敏感）
+    private func containsTestKeyword(in text: String) -> Bool {
+        let pattern = "(?i)\\bFUCK\\b" // (?i) 忽略大小写，\\b 词边界
+        do {
+            let regex = try NSRegularExpression(pattern: pattern)
+            let nsText = text as NSString
+            let range = NSRange(location: 0, length: nsText.length)
+            return regex.firstMatch(in: text, range: range) != nil
+        } catch {
+            return false
+        }
+    }
+    
+    // 验证并应用值
+    private func validateAndApply() {
+        if let pureNum = Int8(input) {
+            // 纯数字 -> 夹紧到 1...6
+            let clampedInt = min(max(Int(pureNum), 1), 6)
+            let clamped = Int8(clampedInt)
+            value = clamped
+            // 回写文本，避免显示与值不一致
+            input = String(clamped)
+        } else if containsTestKeyword(in: input),
+                  let embedded = extractFirstInteger(from: input) {
+            // FUCK 关键字触发：直接使用提取出的整数，不夹紧
+            if let i8 = Int8(exactly: embedded) {
+                value = i8
+                input = String(i8)
+            } else {
+                input = "6" // default
+            }
+        } else {
+            input = "6" // default
+        }
     }
 }
 
