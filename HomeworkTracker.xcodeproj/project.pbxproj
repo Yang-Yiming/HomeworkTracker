@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B61C1C5B2EABE94F00B72B5D /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = B61C1C592EABE94900B72B5D /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B6F4B7B52E975B8C00498CD8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,12 +28,18 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B61C1C592EABE94900B72B5D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B6F4B7A52E975B8A00498CD8 /* HomeworkTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HomeworkTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6F4B7B42E975B8C00498CD8 /* HomeworkTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HomeworkTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6F4B7BE2E975B8C00498CD8 /* HomeworkTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HomeworkTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B61C1C5C2EABEBDE00B72B5D /* ReadMeAssets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ReadMeAssets;
+			sourceTree = "<group>";
+		};
 		B6F4B7A72E975B8A00498CD8 /* HomeworkTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = HomeworkTracker;
@@ -79,6 +89,8 @@
 				B6F4B7B72E975B8C00498CD8 /* HomeworkTrackerTests */,
 				B6F4B7C12E975B8C00498CD8 /* HomeworkTrackerUITests */,
 				B6F4B7A62E975B8A00498CD8 /* Products */,
+				B61C1C592EABE94900B72B5D /* README.md */,
+				B61C1C5C2EABEBDE00B72B5D /* ReadMeAssets */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,6 +120,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				B61C1C5C2EABEBDE00B72B5D /* ReadMeAssets */,
 				B6F4B7A72E975B8A00498CD8 /* HomeworkTracker */,
 			);
 			name = HomeworkTracker;
@@ -212,6 +225,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B61C1C5B2EABE94F00B72B5D /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
